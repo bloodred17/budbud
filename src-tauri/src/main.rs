@@ -11,20 +11,26 @@ fn greet(name: &str) -> String {
 }
 
 #[tauri::command]
-fn create_transaction() -> String {
+fn create_transaction_source(form_data: &str) {
     let transaction_for = TransactionFor::new(
         &String::from("Credit Card"),
         TransactionType::Expense,
     );
-    return match serde_json::to_string(&transaction_for) {
+    let x = match serde_json::to_string(&transaction_for) {
         Ok(x) => x,
         Err(e) => String::from("")
-    }
+    };
+    println!("{}", x);
+    println!("{}", form_data);
 }
+
+// #[tauri::command]
+// fn create_transaction() -> String {
+// }
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![greet, create_transaction])
+        .invoke_handler(tauri::generate_handler![greet, create_transaction_source])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

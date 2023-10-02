@@ -1,15 +1,15 @@
 <section>
-  <div class="header border">
+  <div class="header">
     <slot name="header" />
   </div>
 
-  <div class="body overflow-y-auto border border-red-500">
+  <div class="body overflow-y-auto">
     <slot name="body" />
   </div>
 
 
-  <div class="footer border border-blue-500">
-    <slot name="footer"/>
+  <div class="footer">
+    <slot name="footer" />
   </div>
 </section>
 
@@ -17,8 +17,13 @@
   :global(html) {
       background-color: theme(colors.gray.100);
   }
-  .body {
-      height: 80vh;
+  .header {
+      height: 50px;
+  }
+
+  .footer {
+      position: absolute;
+      @apply bottom-0 left-0 p-4;
   }
 </style>
 
