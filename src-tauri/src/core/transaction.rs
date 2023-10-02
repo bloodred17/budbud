@@ -2,13 +2,13 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum TransactionType {
     Income,
     Expense,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct TransactionFor {
     name: String,
     transaction_type: TransactionType,
@@ -26,7 +26,7 @@ impl TransactionFor {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Transaction {
     transaction_for: TransactionFor,
     amount: f64,

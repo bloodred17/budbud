@@ -11,17 +11,18 @@ fn greet(name: &str) -> String {
 }
 
 #[tauri::command]
-fn create_transaction_source(form_data: &str) {
+fn create_transaction_source(form_data: &str) -> String {
+    let x: TransactionFor = serde_json::from_str(&form_data).unwrap();
+    println!("{:?}", &x);
+
     let transaction_for = TransactionFor::new(
         &String::from("Credit Card"),
         TransactionType::Expense,
     );
-    let x = match serde_json::to_string(&transaction_for) {
+    return match serde_json::to_string(&x) {
         Ok(x) => x,
         Err(e) => String::from("")
     };
-    println!("{}", x);
-    println!("{}", form_data);
 }
 
 // #[tauri::command]
