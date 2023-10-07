@@ -1,5 +1,4 @@
 <script>
-    import Greet from "$lib/Greet.svelte";
     import MainLayout from "$lib/layouts/MainLayout.svelte";
     import CreationButtons from "$lib/components/CreationButtons.svelte";
 </script>
@@ -13,5 +12,3 @@
 
   <CreationButtons slot="footer"/>
 </MainLayout>
-
-<!--<Greet />-->
