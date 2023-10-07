@@ -1,7 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use crate::core::transaction::{TransactionFor, TransactionType};
+use crate::core::transaction::{TransactionSource, TransactionType};
 
 pub mod core;
 
@@ -12,10 +12,10 @@ fn greet(name: &str) -> String {
 
 #[tauri::command]
 fn create_transaction_source(form_data: &str) -> String {
-    let x: TransactionFor = serde_json::from_str(&form_data).unwrap();
+    let x: TransactionSource = serde_json::from_str(&form_data).unwrap();
     println!("{:?}", &x);
 
-    let transaction_for = TransactionFor::new(
+    let transaction_for = TransactionSource::new(
         &String::from("Credit Card"),
         TransactionType::Expense,
     );
