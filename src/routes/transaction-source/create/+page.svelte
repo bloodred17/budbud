@@ -5,6 +5,21 @@
     import AcceptCancelButtons from "$lib/components/AcceptCancelButtons.svelte";
     import {goto} from "$app/navigation";
     import {invoke} from "@tauri-apps/api/tauri";
+    import {onMount} from "svelte";
+    import { emit, listen } from '@tauri-apps/api/event'
+
+    let message = '';
+    onMount(() => {
+      listen('rs2js', (event) => {
+        console.log("rs2js: ");
+        console.log(event);
+      })
+    })
+
+    async function greet(){
+      message = formData?.name;
+      await invoke("js2rs", { message })
+    }
 
     const formData: {
       name: string,
@@ -13,6 +28,7 @@
       name: '',
       transaction_type: ''
     }
+
     async function accept() {
       const val = await invoke('create_transaction_source', { formData: JSON.stringify(formData) });
       console.log(val);
@@ -52,7 +68,7 @@
     </div>
 
       <div class="pt-2 flex justify-center">
-<!--        <button class="btn btn-sm btn-primary" on:click={add}>Add</button>-->
+        <button class="btn btn-sm btn-primary" on:click={() => greet()}>Add</button>
       </div>
   </div>
 
