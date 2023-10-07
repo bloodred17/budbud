@@ -9,17 +9,17 @@ pub enum TransactionType {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct TransactionFor {
+pub struct TransactionSource {
     name: String,
     transaction_type: TransactionType,
 }
 
-impl TransactionFor {
+impl TransactionSource {
     pub fn new(
         name: &String,
         transaction_type: TransactionType,
-    ) -> TransactionFor {
-        TransactionFor {
+    ) -> TransactionSource {
+        TransactionSource {
             name: name.to_owned(),
             transaction_type,
         }
@@ -28,7 +28,7 @@ impl TransactionFor {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Transaction {
-    transaction_for: TransactionFor,
+    transaction_for: TransactionSource,
     amount: f64,
     created_on: DateTime<Utc>,
     // if is_recurring true then cron string is required
@@ -40,7 +40,7 @@ pub struct Transaction {
 
 impl Transaction {
     pub fn new(
-        transaction_for: &TransactionFor,
+        transaction_for: &TransactionSource,
         amount: f64,
     ) -> Transaction {
         Transaction {

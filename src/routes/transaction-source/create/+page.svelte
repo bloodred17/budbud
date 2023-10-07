@@ -13,7 +13,6 @@
       name: '',
       transaction_type: ''
     }
-
     async function accept() {
       const val = await invoke('create_transaction_source', { formData: JSON.stringify(formData) });
       console.log(val);
@@ -23,7 +22,7 @@
 <MainLayout>
   <div slot="header" class="flex">
     <div class="flex">
-      <NavigationButtons/>
+      <NavigationButtons disableBack={true} disableForward={true}/>
     </div>
     <div class="px-2 flex justify-center flex-1">
       <h1 class="text-2xl">Create Transaction Source</h1>
