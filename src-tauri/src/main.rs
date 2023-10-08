@@ -8,7 +8,7 @@ use surrealdb::{Connection, Surreal};
 use surrealdb::engine::any::Any;
 use surrealdb::engine::local::{Db, RocksDb};
 use tauri::{Error, Manager};
-use tokio::sync::{mpsc, Mutex};
+use tokio::sync::{mpsc, Mutex, MutexGuard};
 use tracing::info;
 use once_cell::unsync::Lazy;
 use serde::{Deserialize, Serialize};
@@ -23,8 +23,12 @@ struct AsyncProcInputTx {
     inner: Mutex<mpsc::Sender<String>>,
 }
 
-struct Database {
-    surreal_db: Mutex<Option<Surreal<Db>>>,
+#[derive(Debug)]
+struct Database(Mutex<SurrealDb>);
+
+#[derive(Debug)]
+struct SurrealDb {
+    db: Option<Surreal<Db>>
 }
 
 fn print_type_of<T>(_: &T) {
@@ -37,40 +41,38 @@ fn main() {
     let (async_proc_input_tx, async_proc_input_rx) = mpsc::channel(1);
     let (async_proc_output_tx, mut async_proc_output_rx) = mpsc::channel(1);
 
-    // let (async_db_input_tx, async_db_input_rx) = mpsc::channel(1);
-    // let (async_db_output_tx, mut async_db_output_rx) = mpsc::channel(1);
-
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![create_transaction_source, js2rs])
         .setup(|app| {
+            //
+            // let db: JoinHandle<Surreal<Db>> = tauri::async_runtime::spawn(async move {
+            //     let db = match Surreal::new::<RocksDb>("/Users/ankurdutta/playground/surreal-demo/mydatabase.db").await {
+            //         Ok(x) => x,
+            //         Err(_) => panic!("Unable to connect to database"),
+            //     };
+            //     db.use_ns("namespace").use_db("database").await.expect("TODO: panic message");
+            //     // // Create a new person with a random ID
+            //     // let created: Vec<Person> = match db
+            //     //     .create("person")
+            //     //     .content::<Person>(Person {
+            //     //         title: "Founder & CEO".into(),
+            //     //         name: Name {
+            //     //             first: "Tobie".into(),
+            //     //             last: "Morgan Hitchcock".into(),
+            //     //         },
+            //     //         marketing: true,
+            //     //     })
+            //     //     .await {
+            //     //     Ok(x) => dbg!(x),
+            //     //     Err(_) => panic!("could not create person"),
+            //     // };
+            //     // // Select all people records
+            //     // let people: Vec<Person> = db.select("person").await.expect("something");
+            //     // dbg!(people);
+            //     db
+            // });
 
-            let db: JoinHandle<Surreal<Db>> = tauri::async_runtime::spawn(async move {
-                let db = match Surreal::new::<RocksDb>("/Users/ankurdutta/playground/surreal-demo/mydatabase.db").await {
-                    Ok(x) => x,
-                    Err(_) => panic!("Unable to connect to database"),
-                };
-                db.use_ns("namespace").use_db("database").await.expect("TODO: panic message");
-                // Create a new person with a random ID
-                let created: Vec<Person> = match db
-                    .create("person")
-                    .content::<Person>(Person {
-                        title: "Founder & CEO".into(),
-                        // name: Name {
-                        //     first: "Tobie".into(),
-                        //     last: "Morgan Hitchcock".into(),
-                        // },
-                        marketing: true,
-                    })
-                    .await {
-                    Ok(x) => dbg!(x),
-                    Err(_) => panic!("could not create person"),
-                };
-                db
-            });
-
-            app.manage(Database {
-                surreal_db: Mutex::new(None),
-            });
+            app.manage(Database(Mutex::new(SurrealDb { db: None })));
 
             tauri::async_runtime::spawn(async move {
                 async_process_model(
@@ -117,16 +119,16 @@ fn rs2js<R: tauri::Runtime>(message: String, manager: &impl Manager<R>) {
         .unwrap();
 }
 
-// #[derive(Debug, Serialize, Deserialize, Copy)]
-// struct Name {
-//     first: Cow<'static, str>,
-//     last: Cow<'static, str>,
-// }
+#[derive(Debug, Serialize, Deserialize)]
+struct Name {
+    first: Cow<'static, str>,
+    last: Cow<'static, str>,
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Person {
     title: Cow<'static, str>,
-    // name: Name,
+    name: Name,
     marketing: bool,
 }
 
@@ -139,15 +141,28 @@ async fn js2rs(
     info!(?message, "js2rs");
 
 
-    // let db = state_1.surreal_db.lock().await;
-    // dbg!(&db);
+    // Db connection logic:
+    // If state is None connect
 
+    let mut database = state_1.0.lock().await;
+    dbg!(&database);
+    match &database.db {
+        None => {
+            let _db = match Surreal::new::<RocksDb>("/Users/ankurdutta/playground/surreal-demo/mydatabase.db").await {
+                Ok(x) => x,
+                Err(_) => panic!("Unable to connect to database"),
+            };
+            _db.use_ns("namespace").use_db("database").await.expect("TODO: panic message");
+            // Select all people records
+            let people: Vec<Person> = _db.select("person").await.expect("something");
+            dbg!(people);
 
-    // dbg!(state_1);
+            database.db.replace(_db);
+        },
+        Some(x) => println!("some"),
+    };
 
-    // // Select all people records
-    // let people: Vec<Person> = db.select("person").await?;
-    // dbg!(people);
+    dbg!(&database.db);
 
     let async_proc_input_tx = state.inner.lock().await;
     async_proc_input_tx
