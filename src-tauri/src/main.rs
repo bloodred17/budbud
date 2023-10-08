@@ -1,18 +1,35 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use tauri::{Manager};
+
+use std::borrow::Cow;
+use std::ops::Deref;
+use surrealdb::{Connection, Surreal};
+use surrealdb::engine::any::Any;
+use surrealdb::engine::local::{Db, RocksDb};
+use tauri::{Error, Manager};
 use tokio::sync::{mpsc, Mutex};
 use tracing::info;
+use once_cell::unsync::Lazy;
+use serde::{Deserialize, Serialize};
+use tauri::async_runtime::JoinHandle;
 use crate::core::transaction::{TransactionSource, TransactionType};
 
 pub mod core;
 
+// static DB: Lazy<Surreal<Db>> = Lazy::new(Surreal::init);
 
 struct AsyncProcInputTx {
     inner: Mutex<mpsc::Sender<String>>,
 }
 
+struct Database {
+    surreal_db: Mutex<Option<Surreal<Db>>>,
+}
+
+fn print_type_of<T>(_: &T) {
+    println!("{}", std::any::type_name::<T>())
+}
 
 fn main() {
     tracing_subscriber::fmt::init();
@@ -20,12 +37,41 @@ fn main() {
     let (async_proc_input_tx, async_proc_input_rx) = mpsc::channel(1);
     let (async_proc_output_tx, mut async_proc_output_rx) = mpsc::channel(1);
 
+    // let (async_db_input_tx, async_db_input_rx) = mpsc::channel(1);
+    // let (async_db_output_tx, mut async_db_output_rx) = mpsc::channel(1);
+
     tauri::Builder::default()
-        .manage(AsyncProcInputTx {
-            inner: Mutex::new(async_proc_input_tx),
-        })
         .invoke_handler(tauri::generate_handler![create_transaction_source, js2rs])
         .setup(|app| {
+
+            let db: JoinHandle<Surreal<Db>> = tauri::async_runtime::spawn(async move {
+                let db = match Surreal::new::<RocksDb>("/Users/ankurdutta/playground/surreal-demo/mydatabase.db").await {
+                    Ok(x) => x,
+                    Err(_) => panic!("Unable to connect to database"),
+                };
+                db.use_ns("namespace").use_db("database").await.expect("TODO: panic message");
+                // Create a new person with a random ID
+                let created: Vec<Person> = match db
+                    .create("person")
+                    .content::<Person>(Person {
+                        title: "Founder & CEO".into(),
+                        // name: Name {
+                        //     first: "Tobie".into(),
+                        //     last: "Morgan Hitchcock".into(),
+                        // },
+                        marketing: true,
+                    })
+                    .await {
+                    Ok(x) => dbg!(x),
+                    Err(_) => panic!("could not create person"),
+                };
+                db
+            });
+
+            app.manage(Database {
+                surreal_db: Mutex::new(None),
+            });
+
             tauri::async_runtime::spawn(async move {
                 async_process_model(
                     async_proc_input_rx,
@@ -43,6 +89,9 @@ fn main() {
             });
 
             Ok(())
+        })
+        .manage(AsyncProcInputTx {
+            inner: Mutex::new(async_proc_input_tx),
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -68,12 +117,38 @@ fn rs2js<R: tauri::Runtime>(message: String, manager: &impl Manager<R>) {
         .unwrap();
 }
 
+// #[derive(Debug, Serialize, Deserialize, Copy)]
+// struct Name {
+//     first: Cow<'static, str>,
+//     last: Cow<'static, str>,
+// }
+
+#[derive(Debug, Serialize, Deserialize)]
+struct Person {
+    title: Cow<'static, str>,
+    // name: Name,
+    marketing: bool,
+}
+
 #[tauri::command]
 async fn js2rs(
     message: String,
     state: tauri::State<'_, AsyncProcInputTx>,
+    state_1: tauri::State<'_, Database>,
 ) -> Result<(), String> {
     info!(?message, "js2rs");
+
+
+    // let db = state_1.surreal_db.lock().await;
+    // dbg!(&db);
+
+
+    // dbg!(state_1);
+
+    // // Select all people records
+    // let people: Vec<Person> = db.select("person").await?;
+    // dbg!(people);
+
     let async_proc_input_tx = state.inner.lock().await;
     async_proc_input_tx
         .send(message)
