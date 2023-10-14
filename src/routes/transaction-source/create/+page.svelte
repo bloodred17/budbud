@@ -7,6 +7,7 @@
     import {invoke} from "@tauri-apps/api/tauri";
     import {onMount} from "svelte";
     import { emit, listen } from '@tauri-apps/api/event'
+    import TestDb from "$lib/components/TestDb.svelte";
 
     let message = '';
     onMount(() => {
@@ -35,6 +36,7 @@
     }
 </script>
 
+<TestDb/>
 <MainLayout>
   <div slot="header" class="flex">
     <div class="flex">
