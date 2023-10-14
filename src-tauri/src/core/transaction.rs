@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use surrealdb::sql::Thing;
 
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -10,6 +11,7 @@ pub enum TransactionType {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct TransactionSource {
+    id: Option<Thing>,
     name: String,
     transaction_type: TransactionType,
 }
@@ -20,6 +22,7 @@ impl TransactionSource {
         transaction_type: TransactionType,
     ) -> TransactionSource {
         TransactionSource {
+            id: None,
             name: name.to_owned(),
             transaction_type,
         }
