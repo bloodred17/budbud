@@ -6,6 +6,24 @@
   import AcceptCancelButtons from "$lib/components/AcceptCancelButtons.svelte";
   import {invoke} from "@tauri-apps/api/tauri";
   import {notificationStore, NotificationType, Notify} from "$lib/components/notification/notification.store";
+  import Autocomplete from "$lib/ui/Autocomplete.svelte";
+  import {onMount} from "svelte";
+  import {type TransactionSource, transactionSourceStore} from "$lib/stores/transaction-source.store";
+  import type {SelectionOption} from "$lib/types/ui.interface";
+
+
+  let transactionSources: TransactionSource[] = [];
+  let options: SelectionOption[] = [];
+
+  onMount(() => {
+    transactionSourceStore.subscribe((_transactionSources) => {
+      transactionSources = _transactionSources;
+      options = transactionSources.map((source) => ({
+        display: source?.name,
+        value: source?.id?.id?.String || null,
+      }))
+    });
+  })
 
   interface TransactionForm {
     name?: string,
@@ -26,6 +44,8 @@
   }
 
   async function accept() {
+    // console.log(formData);
+
     invoke<string>('create_transaction', { formData: JSON.stringify(formData) })
       .then((value: string) =>
         // console.log(value)
@@ -62,7 +82,7 @@
     </div>
   </div>
 
-  <div slot="body" class="px-1 overflow-y-hidden">
+  <div slot="body" class="px-1 min-h-full">
     <div class="form-control w-full max-w-xs">
       <label class="label" for="transaction_name">
         <span class="label-text">What is this transaction for?</span>
@@ -71,22 +91,25 @@
     </div>
 
     <div class="form-control w-full max-w-xs">
-      <label class="label" for="transaction_source">
-        <span class="label-text">Set Payment source: </span>
+      <label class="label" for="transaction_amount">
+        <span class="label-text">Source: </span>
       </label>
-      <input id="transaction_source" type="text" placeholder="Type here" class="input input-bordered input-sm w-full max-w-xs" bind:value={formData['transaction_source']} />
+      <Autocomplete
+          items={options}
+          selectedItem="",
+          on:value={(event) => formData['transaction_source'] = event?.detail?.value}
+      />
     </div>
 
-<!--    <div class="form-control w-full max-w-xs mt-2">-->
-<!--      <label class="label" for="transaction_type">-->
-<!--        <span class="label-text">Is it an Income or and Expense?</span>-->
-<!--      </label>-->
-<!--      <select id="transaction_type" class="select select-bordered select-sm" bind:value={formData['transaction_type']}>-->
-<!--        <option disabled selected>Pick one</option>-->
-<!--        <option>Income</option>-->
-<!--        <option>Expense</option>-->
-<!--      </select>-->
-<!--    </div>-->
+
+    <div class="form-control w-full max-w-xs">
+      <label class="label" for="transaction_amount">
+        <span class="label-text">Amount: </span>
+      </label>
+      <input id="transaction_amount" type="number" placeholder="$" class="input input-bordered input-sm w-full max-w-xs" bind:value={formData['amount']} />
+    </div>
+
+
 
   </div>
 

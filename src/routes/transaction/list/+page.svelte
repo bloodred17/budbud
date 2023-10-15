@@ -7,6 +7,7 @@
   import {onMount} from "svelte";
   import {invoke} from "@tauri-apps/api/tauri";
   import {notificationStore, Notify} from "$lib/components/notification/notification.store";
+  import TransactionSelector from "$lib/components/TransactionSelector.svelte";
 
   let tableData = [];
 
@@ -43,9 +44,10 @@
       <h1 class="text-xl">Transactions</h1>
     </div>
     <div class="flex">
-      <div class="invisible">
-        <AcceptCancelButtons on:accept={async () => await accept()} on:cancel={() => goto('/')} />
-      </div>
+<!--      <div class="invisible">-->
+<!--        <AcceptCancelButtons on:accept={async () => await accept()} on:cancel={() => goto('/')} />-->
+<!--      </div>-->
+      <TransactionSelector/>
     </div>
   </div>
 
@@ -69,10 +71,14 @@
         <tbody>
         {#each tableData as row, index (row?.id?.id?.String)}
           <tr>
-            <th>{index}</th>
+            <th>{index + 1}</th>
             <td>{row?.name}</td>
             <td>{row?.amount}</td>
-            <td>{row?.transaction_source?.name}</td>
+            <td>
+              <div class="badge badge-error gap-2">
+                <span>{row?.transaction_source?.name}</span>
+              </div>
+            </td>
             <td>
               <div class="join">
                 <!-- Edit-->

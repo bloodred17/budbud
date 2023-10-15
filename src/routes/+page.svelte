@@ -1,7 +1,6 @@
 <script lang="ts">
   import MainLayout from "$lib/layouts/MainLayout.svelte";
   import CreationButtons from "$lib/components/CreationButtons.svelte";
-  import Notification from "$lib/components/notification/Notification.svelte";
   import {notificationStore, NotificationType} from "$lib/components/notification/notification.store";
   import { v4 as uuidv4 } from 'uuid';
 
