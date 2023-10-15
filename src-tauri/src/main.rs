@@ -37,6 +37,9 @@ fn main() {
             core::transaction_source::list_transaction_sources,
             core::transaction_source::delete_transaction_source,
 
+            core::transaction::create_transaction,
+            core::transaction::list_transactions,
+
             db::establish_connection,
             db::create_entry,
             db::delete_entry,
