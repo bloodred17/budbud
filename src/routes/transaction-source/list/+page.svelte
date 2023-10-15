@@ -70,7 +70,7 @@
                 {#each tableData as row, index (row?.id?.id?.String)}
                     <tr>
                         <th>{index + 1}</th>
-                        <td>{row?.name}</td>
+                        <td on:click={() => console.log(row)}>{row?.name}</td>
                         <td>{row?.transaction_type}</td>
                         <td>
                             <div class="join">

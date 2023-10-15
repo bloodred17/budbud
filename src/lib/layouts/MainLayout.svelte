@@ -1,7 +1,7 @@
 <script>
 </script>
 
-<section>
+<section class="overflow-x-hidden">
   <div class="header">
     <slot name="header" />
   </div>

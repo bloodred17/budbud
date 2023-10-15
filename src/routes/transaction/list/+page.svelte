@@ -8,17 +8,26 @@
   import {invoke} from "@tauri-apps/api/tauri";
   import {notificationStore, Notify} from "$lib/components/notification/notification.store";
   import TransactionSelector from "$lib/components/TransactionSelector.svelte";
+  import dayjs from "dayjs";
 
   let tableData = [];
+
+  let total_income: number = 0;
+  let total_expense: number = 0;
 
   onMount(() => {
     get_data();
   });
 
+  $: console.log(total_income);
+  $: console.log(total_expense);
+
   const get_data = () => {
     invoke<string>('list_transactions')
       .then((response: string) => {
         tableData = JSON.parse(response).data;
+        total_income = get_total_income();
+        total_expense = get_total_expense();
       })
   }
 
@@ -33,6 +42,34 @@
         })
       })
   };
+
+  const get_total_income = () => {
+    return tableData?.reduce((acc: number, next) => {
+      if (next?.transaction_source?.transaction_type == 'Income') {
+        return acc + next?.amount;
+      }
+      return acc;
+    }, 0);
+  }
+
+  const get_total_expense = () => {
+    return tableData?.reduce((acc: number, next) => {
+      if (next?.transaction_source?.transaction_type == 'Expense') {
+        return acc + next?.amount;
+      }
+      return acc;
+    }, 0);
+  }
+
+  const toggleExpander = (id: string) => {
+    const row = document?.getElementById(id);
+    console.log(row?.classList?.entries());
+    if (row?.classList?.contains('hidden')) {
+      row?.classList?.remove('hidden');
+    } else {
+      row?.classList?.add('hidden');
+    }
+  }
 </script>
 
 <MainLayout>
@@ -63,6 +100,7 @@
             <th>Name</th>
             <th>Amount</th>
             <th>Transaction Source</th>
+            <th>Date</th>
             <th></th>
           </tr>
           </thead>
@@ -70,15 +108,22 @@
 
         <tbody>
         {#each tableData as row, index (row?.id?.id?.String)}
-          <tr>
+          <tr id={row?.id?.id?.String} class="hover:bg-primary" on:click={() => toggleExpander("expand-" + row?.id?.id?.String)}>
             <th>{index + 1}</th>
-            <td>{row?.name}</td>
+            <td on:click={() => console.log(row)}>{row?.name}</td>
             <td>{row?.amount}</td>
             <td>
+              {#if row?.transaction_source?.transaction_type === 'Expense'}
               <div class="badge badge-error gap-2">
                 <span>{row?.transaction_source?.name}</span>
               </div>
+              {:else if row?.transaction_source?.transaction_type === 'Income'}
+              <div class="badge badge-success gap-2">
+                <span>{row?.transaction_source?.name}</span>
+              </div>
+              {/if}
             </td>
+            <td> {dayjs(row?.start_date)?.format('DD MMM, HH:mm')} </td>
             <td>
               <div class="join">
                 <!-- Edit-->
@@ -95,6 +140,17 @@
                 </button>
               </div>
             </td>
+          </tr>
+          <tr id={"expand-" + row?.id?.id?.String} class="hidden">
+
+            <th colspan="6">
+              <div class="mockup-code">
+                <pre data-prefix="$"><code>run {row?.transaction_source?.name}</code></pre>
+                <pre data-prefix=">" class="text-warning"><code>{JSON.stringify(row, undefined, 2)}</code></pre>
+                <pre data-prefix=">" class="text-success"><code>Done!</code></pre>
+              </div>
+            </th>
+
           </tr>
         {:else}
           <div class="hero">
@@ -115,6 +171,36 @@
         {/each}
         </tbody>
       </table>
+
+      {#if tableData.length > 0}
+        <div class="flex justify-center mt-4">
+          <div class="stats shadow bg-base-300">
+
+            <div class="stat">
+              <div class="stat-figure text-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
+                </svg>
+              </div>
+              <div class="stat-title">Income</div>
+              <div class="stat-value">{total_income}</div>
+              <div class="stat-desc">Jan 1st - Feb 1st</div>
+            </div>
+
+            <div class="stat">
+              <div class="stat-figure text-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6L9 12.75l4.286-4.286a11.948 11.948 0 014.306 6.43l.776 2.898m0 0l3.182-5.511m-3.182 5.51l-5.511-3.181" />
+                </svg>
+              </div>
+              <div class="stat-title">Expense</div>
+              <div class="stat-value">{total_expense}</div>
+              <div class="stat-desc">Jan 1st - Feb 1st</div>
+            </div>
+
+          </div>
+        </div>
+      {/if}
     </div>
 
   </div>
