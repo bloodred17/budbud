@@ -1,5 +1,4 @@
 <script>
-import Notification from "$lib/components/notification/Notification.svelte";
 </script>
 
 <section>
@@ -7,7 +6,7 @@ import Notification from "$lib/components/notification/Notification.svelte";
     <slot name="header" />
   </div>
 
-  <div class="body overflow-y-auto">
+  <div class="body">
     <slot name="body" />
   </div>
 

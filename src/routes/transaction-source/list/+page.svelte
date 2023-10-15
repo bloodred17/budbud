@@ -7,24 +7,24 @@
     import {onMount} from "svelte";
     import {invoke} from "@tauri-apps/api/tauri";
     import {notificationStore, Notify} from "$lib/components/notification/notification.store";
+    import {
+        fetchTransactionSources,
+        type TransactionSource,
+        transactionSourceStore
+    } from "$lib/stores/transaction-source.store";
+    import TransactionSelector from "$lib/components/TransactionSelector.svelte";
 
-    let tableData = [];
+    let tableData: TransactionSource[] = [];
 
     onMount(() => {
-        get_data();
+        fetchTransactionSources();
+        transactionSourceStore.subscribe((transactionSources) => tableData = transactionSources);
     });
-
-    const get_data = () => {
-        invoke<string>('list_transaction_sources')
-            .then((response: string) => {
-                tableData = JSON.parse(response).data;
-            })
-    }
 
     const delete_transaction_source = (id: string) => {
         invoke('delete_transaction_source', {id})
             .then(() => {
-                get_data();
+                fetchTransactionSources();
                 notificationStore.update(() => {
                     return new Notify({
                         message: `${id} deleted`,
@@ -43,9 +43,10 @@
             <h1 class="text-xl">Transaction Sources</h1>
         </div>
         <div class="flex">
-            <div class="invisible">
-                <AcceptCancelButtons on:accept={async () => await accept()} on:cancel={() => goto('/')} />
-            </div>
+            <TransactionSelector/>
+<!--            <div class="invisible">-->
+<!--                <AcceptCancelButtons on:accept={async () => await accept()} on:cancel={() => goto('/')} />-->
+<!--            </div>-->
         </div>
     </div>
 
@@ -68,7 +69,7 @@
                 <tbody>
                 {#each tableData as row, index (row?.id?.id?.String)}
                     <tr>
-                        <th>{index}</th>
+                        <th>{index + 1}</th>
                         <td>{row?.name}</td>
                         <td>{row?.transaction_type}</td>
                         <td>
