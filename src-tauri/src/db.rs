@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use surrealdb::engine::local::{Db, RocksDb};
 use surrealdb::Surreal;
 use tokio::sync::Mutex;
-use crate::core::transaction::{TransactionSource, TransactionType};
+use crate::core::transaction_source::{TransactionSource, TransactionType};
 
 
 #[derive(Debug)]
@@ -155,7 +155,7 @@ pub async fn update(state: tauri::State<'_, Database>) -> Result<String, String>
     return Ok(String::from("Updating"));
 }
 
-async fn get_db_from_state(state: &tauri::State<'_, Database>) -> Option<Surreal<Db>> {
+pub async fn get_db_from_state(state: &tauri::State<'_, Database>) -> Option<Surreal<Db>> {
     let surreal_db = &state.0.lock().await;
     surreal_db.db.clone()
 }

@@ -13,7 +13,7 @@
     }
 
     async function deleteEntry() {
-        connection_output = await invoke('delete_entry', { table: 'transaction_source', id: input });
+        connection_output = await invoke('delete_entry', { table: 'transaction_source', id: input || null });
     }
 
     async function read() {

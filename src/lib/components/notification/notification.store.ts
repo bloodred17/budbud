@@ -6,7 +6,7 @@ export enum NotificationType {
   Info = 'info',
   Success = 'success',
   Warning = 'warning',
-  Danger = 'danger',
+  Error = 'danger',
 }
 
 export interface NotificationInterface {
