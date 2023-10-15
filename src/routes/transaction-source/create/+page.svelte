@@ -9,18 +9,18 @@
     import { emit, listen } from '@tauri-apps/api/event'
     import TestDb from "$lib/components/TestDb.svelte";
 
-    let message = '';
-    onMount(() => {
-      listen('rs2js', (event) => {
-        console.log("rs2js: ");
-        console.log(event);
-      })
-    })
-
-    async function greet(){
-      message = formData?.name;
-      await invoke("js2rs", { message })
-    }
+    // let message = '';
+    // onMount(() => {
+    //   listen('rs2js', (event) => {
+    //     console.log("rs2js: ");
+    //     console.log(event);
+    //   })
+    // })
+    //
+    // async function greet(){
+    //   message = formData?.name;
+    //   await invoke("js2rs", { message })
+    // }
 
     const formData: {
       name: string,
@@ -36,14 +36,14 @@
     }
 </script>
 
-<TestDb/>
+<!--<TestDb/>-->
 <MainLayout>
   <div slot="header" class="flex">
     <div class="flex">
       <NavigationButtons disableBack={true} disableForward={true}/>
     </div>
     <div class="px-2 flex justify-center flex-1">
-      <h1 class="text-2xl">Create Transaction Source</h1>
+      <h1 class="text-xl">Create Transaction Source</h1>
     </div>
     <div class="flex">
       <AcceptCancelButtons on:accept={async () => await accept()} on:cancel={() => goto('/')} />
@@ -69,9 +69,6 @@
       </select>
     </div>
 
-      <div class="pt-2 flex justify-center">
-        <button class="btn btn-sm btn-primary" on:click={() => greet()}>Add</button>
-      </div>
   </div>
 
   <CreationButtons slot="footer"/>
