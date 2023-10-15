@@ -6,7 +6,7 @@
     import AcceptCancelButtons from "$lib/components/AcceptCancelButtons.svelte";
     import {onMount} from "svelte";
     import {invoke} from "@tauri-apps/api/tauri";
-    import {notificationStore, NotificationType, Notify} from "$lib/components/notification/notification.store";
+    import {notificationStore, Notify} from "$lib/components/notification/notification.store";
 
     let tableData = [];
 
@@ -54,6 +54,7 @@
         <div class="overflow-x-auto">
             <table class="table">
                 <!-- head -->
+                {#if tableData.length > 0}
                 <thead>
                     <tr>
                         <th></th>
@@ -62,8 +63,9 @@
                         <th></th>
                     </tr>
                 </thead>
-                <tbody>
+                {/if}
 
+                <tbody>
                 {#each tableData as row, index (row?.id?.id?.String)}
                     <tr>
                         <th>{index}</th>
@@ -78,7 +80,7 @@
                                     </svg>
                                 </button>
                                 <!-- Delete-->
-                                <button class="btn btn-xs join-item" on:click={() => delete_transaction_source(row?.id?.id?.String)}>
+                                <button class="btn btn-xs join-item hover:btn-error" on:click={() => delete_transaction_source(row?.id?.id?.String)}>
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                                     </svg>
@@ -86,6 +88,22 @@
                             </div>
                         </td>
                     </tr>
+                {:else}
+                    <div class="hero">
+                        <div class="hero-content text-center">
+                            <div class="max-w-md">
+                                <h1 class="text-3xl font-bold">Oops!</h1>
+                                <p class="py-6">You currently have no transaction sources.</p>
+                                <a class="btn btn-sm btn-primary" href="/transaction-source/create">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                    </svg>
+
+                                    <span class="ml-2">Add Now</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 {/each}
                 </tbody>
             </table>
