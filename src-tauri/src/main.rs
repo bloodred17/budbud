@@ -39,6 +39,7 @@ fn main() {
 
             core::transaction::create_transaction,
             core::transaction::list_transactions,
+            core::transaction::delete_transaction,
 
             db::establish_connection,
             db::create_entry,
