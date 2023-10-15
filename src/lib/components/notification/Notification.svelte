@@ -9,7 +9,7 @@
   const notificationClass: Record<NotificationType, string> = {
     [NotificationType.Info]: 'alert-info',
     [NotificationType.Success]: 'alert-success',
-    [NotificationType.Danger]: 'alert-error',
+    [NotificationType.Error]: 'alert-error',
     [NotificationType.Warning]: 'alert-warning'
   }
 

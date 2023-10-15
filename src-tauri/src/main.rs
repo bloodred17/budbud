@@ -6,7 +6,6 @@ use surrealdb::{Connection};
 use tauri::{Manager};
 use tokio::sync::{mpsc, Mutex};
 use tracing::info;
-use crate::core::transaction::TransactionSource;
 use crate::db::{Database, SurrealDb};
 
 pub mod core;
@@ -31,8 +30,11 @@ fn main() {
 
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
-            create_transaction_source,
+            two_way,
             js2rs,
+
+            core::transaction_source::create_transaction_source,
+            core::transaction_source::list_transaction_sources,
 
             db::establish_connection,
             db::create_entry,
@@ -105,22 +107,22 @@ async fn js2rs(
 }
 
 #[tauri::command]
-async fn create_transaction_source(
+async fn two_way(
     form_data: &str,
     state: tauri::State<'_, AsyncProcInputTx>,
 ) -> Result<(), String> {
     info!(?form_data, "create_transaction_source");
     let async_proc_input_tx = state.inner.lock().await;
-    let mut message = "".to_string();
-    message = match serde_json::from_str::<TransactionSource>(form_data) {
-        Ok(x) => {
-            dbg!(&x);
-            String::from("Entry Created")
-        },
-        Err(_) => {
-            String::from("Failed to create")
-        }
-    };
+    let message = "".to_string();
+    // message = match serde_json::from_str::<TransactionSource>(form_data) {
+    //     Ok(x) => {
+    //         dbg!(&x);
+    //         String::from("Entry Created")
+    //     },
+    //     Err(_) => {
+    //         String::from("Failed to create")
+    //     }
+    // };
 
     async_proc_input_tx
         .send(message)

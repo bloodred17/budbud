@@ -1,9 +1,20 @@
-<script>
-import {goto} from "$app/navigation";
-import NavigationButtons from "$lib/components/NavigationButtons.svelte";
-import CreationButtons from "$lib/components/CreationButtons.svelte";
-import MainLayout from "$lib/layouts/MainLayout.svelte";
-import AcceptCancelButtons from "$lib/components/AcceptCancelButtons.svelte";
+<script lang="ts">
+    import {goto} from "$app/navigation";
+    import NavigationButtons from "$lib/components/NavigationButtons.svelte";
+    import CreationButtons from "$lib/components/CreationButtons.svelte";
+    import MainLayout from "$lib/layouts/MainLayout.svelte";
+    import AcceptCancelButtons from "$lib/components/AcceptCancelButtons.svelte";
+    import {onMount} from "svelte";
+    import {invoke} from "@tauri-apps/api/tauri";
+
+    let tableData = [];
+    onMount(() => {
+        invoke<string>('list_transaction_sources')
+            .then((response: string) => {
+                console.log(JSON.parse(response));
+                tableData = JSON.parse(response).data;
+            })
+    })
 </script>
 
 <MainLayout>
@@ -22,27 +33,47 @@ import AcceptCancelButtons from "$lib/components/AcceptCancelButtons.svelte";
     </div>
 
     <div slot="body" class="px-1">
-<!--        <div class="form-control w-full max-w-xs">-->
-<!--            <label class="label" for="transaction_name">-->
-<!--                <span class="label-text">What do you want to call this source?</span>-->
-<!--            </label>-->
-<!--            <input id="transaction_name" type="text" placeholder="Type here" class="input input-bordered input-sm w-full max-w-xs" bind:value={formData['name']} />-->
-<!--        </div>-->
 
-<!--        <div class="form-control w-full max-w-xs mt-2">-->
-<!--            <label class="label" for="transaction_type">-->
-<!--                <span class="label-text">Is it an Income or and Expense?</span>-->
-<!--            </label>-->
-<!--            <select id="transaction_type" class="select select-bordered select-sm" bind:value={formData['transaction_type']}>-->
-<!--                <option disabled selected>Pick one</option>-->
-<!--                <option>Income</option>-->
-<!--                <option>Expense</option>-->
-<!--            </select>-->
-<!--        </div>-->
+        <div class="overflow-x-auto">
+            <table class="table">
+                <!-- head -->
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Name</th>
+                        <th>Transaction Type</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
 
-<!--        <div class="pt-2 flex justify-center">-->
-<!--            <button class="btn btn-sm btn-primary" on:click={() => greet()}>Add</button>-->
-<!--        </div>-->
+                {#each tableData as row, index (row?.id?.id?.String)}
+                    <tr>
+                        <th>{index}</th>
+                        <td>{row?.name}</td>
+                        <td>{row?.transaction_type}</td>
+                        <td>
+                            <div class="join">
+                                <!-- Edit-->
+                                <button class="btn btn-xs join-item">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                    </svg>
+                                </button>
+                                <!-- Delete-->
+                                <button class="btn btn-xs join-item">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                {/each}
+                </tbody>
+            </table>
+        </div>
+
     </div>
 
     <CreationButtons slot="footer"/>

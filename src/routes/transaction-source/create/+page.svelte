@@ -1,15 +1,18 @@
 <script lang="ts">
-    import MainLayout from "$lib/layouts/MainLayout.svelte";
-    import CreationButtons from "$lib/components/CreationButtons.svelte";
-    import NavigationButtons from "$lib/components/NavigationButtons.svelte";
-    import AcceptCancelButtons from "$lib/components/AcceptCancelButtons.svelte";
-    import {goto} from "$app/navigation";
-    import {invoke} from "@tauri-apps/api/tauri";
-    import {onMount} from "svelte";
-    import { emit, listen } from '@tauri-apps/api/event'
-    import TestDb from "$lib/components/TestDb.svelte";
+  import MainLayout from "$lib/layouts/MainLayout.svelte";
+  import CreationButtons from "$lib/components/CreationButtons.svelte";
+  import NavigationButtons from "$lib/components/NavigationButtons.svelte";
+  import AcceptCancelButtons from "$lib/components/AcceptCancelButtons.svelte";
+  import {goto} from "$app/navigation";
+  import {invoke} from "@tauri-apps/api/tauri";
+  import TestDb from "$lib/components/TestDb.svelte";
+  import {
+    Notification as Notify,
+    notificationStore,
+    NotificationType
+  } from "$lib/components/notification/notification.store";
 
-    // let message = '';
+  // let message = '';
     // onMount(() => {
     //   listen('rs2js', (event) => {
     //     console.log("rs2js: ");
@@ -31,12 +34,28 @@
     }
 
     async function accept() {
-      const val = await invoke('create_transaction_source', { formData: JSON.stringify(formData) });
-      console.log(val);
+      invoke<string>('create_transaction_source', { formData: JSON.stringify(formData) })
+        .then((value: string) =>
+          notificationStore.update(() => {
+            return new Notify({
+              notificationType: NotificationType.Success,
+              message: value,
+              timeout: 5000,
+            });
+          })
+        ).catch((e) =>
+          notificationStore.update(() => {
+            return new Notify({
+              notificationType: NotificationType.Error,
+              message: e?.message,
+              timeout: 5000,
+            });
+          })
+        )
     }
 </script>
 
-<!--<TestDb/>-->
+<TestDb/>
 <MainLayout>
   <div slot="header" class="flex">
     <div class="flex">

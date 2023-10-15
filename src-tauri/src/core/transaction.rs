@@ -1,33 +1,8 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use surrealdb::sql::Thing;
+use crate::core::transaction_source::TransactionSource;
 
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub enum TransactionType {
-    Income,
-    Expense,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct TransactionSource {
-    id: Option<Thing>,
-    name: String,
-    transaction_type: TransactionType,
-}
-
-impl TransactionSource {
-    pub fn new(
-        name: &String,
-        transaction_type: TransactionType,
-    ) -> TransactionSource {
-        TransactionSource {
-            id: None,
-            name: name.to_owned(),
-            transaction_type,
-        }
-    }
-}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Transaction {
