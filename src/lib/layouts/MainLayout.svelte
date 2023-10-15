@@ -1,3 +1,7 @@
+<script>
+import Notification from "$lib/components/notification/Notification.svelte";
+</script>
+
 <section>
   <div class="header">
     <slot name="header" />
