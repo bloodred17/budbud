@@ -38,6 +38,7 @@
 	"type": "module",
 	"dependencies": {
 		"@tauri-apps/api": "^1.5.0",
+		"dayjs": "^1.11.10",
 		"uuid": "^9.0.1"
 	}
 }
