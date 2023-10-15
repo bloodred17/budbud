@@ -68,7 +68,7 @@ pub async fn establish_connection(state: tauri::State<'_, Database>) -> Result<S
 
     dbg!(&database.db);
 
-    return Ok(String::from("Establishing connection"));
+    return Ok(String::from("Connection Established"));
 }
 
 #[tauri::command]

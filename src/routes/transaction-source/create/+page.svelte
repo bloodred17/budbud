@@ -50,7 +50,7 @@
     </div>
   </div>
 
-  <div slot="body" class="px-1">
+  <div slot="body" class="px-1 overflow-y-hidden">
     <div class="form-control w-full max-w-xs">
       <label class="label" for="transaction_name">
         <span class="label-text">What do you want to call this source?</span>
