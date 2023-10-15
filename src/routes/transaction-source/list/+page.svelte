@@ -6,15 +6,32 @@
     import AcceptCancelButtons from "$lib/components/AcceptCancelButtons.svelte";
     import {onMount} from "svelte";
     import {invoke} from "@tauri-apps/api/tauri";
+    import {notificationStore, NotificationType, Notify} from "$lib/components/notification/notification.store";
 
     let tableData = [];
+
     onMount(() => {
+        get_data();
+    });
+
+    const get_data = () => {
         invoke<string>('list_transaction_sources')
             .then((response: string) => {
-                console.log(JSON.parse(response));
                 tableData = JSON.parse(response).data;
             })
-    })
+    }
+
+    const delete_transaction_source = (id: string) => {
+        invoke('delete_transaction_source', {id})
+            .then(() => {
+                get_data();
+                notificationStore.update(() => {
+                    return new Notify({
+                        message: `${id} deleted`,
+                    })
+                })
+            })
+    };
 </script>
 
 <MainLayout>
@@ -61,7 +78,7 @@
                                     </svg>
                                 </button>
                                 <!-- Delete-->
-                                <button class="btn btn-xs join-item">
+                                <button class="btn btn-xs join-item" on:click={() => delete_transaction_source(row?.id?.id?.String)}>
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                                     </svg>

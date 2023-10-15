@@ -1,7 +1,7 @@
 <script lang="ts" context="module">
 
   import {invoke} from "@tauri-apps/api/tauri";
-  import {notificationStore, Notification as Notify} from "$lib/components/notification/notification.store";
+  import {notificationStore, Notify as Notify} from "$lib/components/notification/notification.store";
 
   invoke('establish_connection')
     .then((response) => {
