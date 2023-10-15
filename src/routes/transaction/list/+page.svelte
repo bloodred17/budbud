@@ -22,7 +22,7 @@
   }
 
   const delete_transaction = (id: string) => {
-    invoke('delete_transaction_source', {id})
+    invoke('delete_transaction', {id})
       .then(() => {
         get_data();
         notificationStore.update(() => {
@@ -95,7 +95,7 @@
             <div class="hero-content text-center">
               <div class="max-w-md">
                 <h1 class="text-3xl font-bold">Oops!</h1>
-                <p class="py-6">You currently have no transaction sources.</p>
+                <p class="py-6">You currently have no transactions.</p>
                 <a class="btn btn-sm btn-primary" href="/transaction/create">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />

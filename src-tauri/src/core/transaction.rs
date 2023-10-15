@@ -118,3 +118,20 @@ pub async fn list_transactions(state: tauri::State<'_, Database>) -> Result<Stri
     // dbg!(&json_response);
     Ok(json_response)
 }
+
+
+#[tauri::command]
+pub async fn delete_transaction(id: String, state: tauri::State<'_, Database>) -> Result<String, String> {
+    let db = get_db_from_state(&state).await.unwrap();
+    dbg!(&id);
+
+    let deleted: Option<Transaction> = db.delete(("transaction", &id))
+        .await
+        .expect(format!("{} is deleted", &id).as_str());
+    dbg!(&deleted);
+
+    let json_response = JsonResponse::new(Some(deleted));
+    let error_message = "transaction is deleted but failed to serialize the output";
+    Ok(json_response.to_string(Some(error_message)))
+}
+
