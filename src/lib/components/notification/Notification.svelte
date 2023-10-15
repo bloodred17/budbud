@@ -1,6 +1,6 @@
 <script lang="ts">
   import {
-    type Notification,
+    type NotificationInterface,
     notificationStore,
     NotificationType
   } from "$lib/components/notification/notification.store";
@@ -23,7 +23,7 @@
       }
     }, timeout)
   });
-  let notificationQueue: Notification[] = [];
+  let notificationQueue: NotificationInterface[] = [];
 
   onMount(() => {
     notificationStore.subscribe((notification) => {
@@ -35,7 +35,7 @@
 
   })
 
-  function removeFromQueue(notification: Notification) {
+  function removeFromQueue(notification: NotificationInterface) {
     delay(notification?.timeout, () => {
       notificationQueue = [...notificationQueue.filter((item) => item?.id !== notification?.id)];
     })
