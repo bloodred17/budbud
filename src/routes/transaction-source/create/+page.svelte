@@ -7,7 +7,7 @@
   import {invoke} from "@tauri-apps/api/tauri";
   import TestDb from "$lib/components/TestDb.svelte";
   import {
-    Notification as Notify,
+    Notify as Notify,
     notificationStore,
     NotificationType
   } from "$lib/components/notification/notification.store";

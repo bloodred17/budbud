@@ -20,7 +20,7 @@ export type NotificationParams =
   Partial<Omit<NotificationInterface, 'id'>> &
   Required<Pick<NotificationInterface, 'message'>>;
 
-export class Notification implements NotificationInterface {
+export class Notify implements NotificationInterface {
   id = uuidv4()
   notificationType: NotificationType = NotificationType.Neutral;
   message = '';
