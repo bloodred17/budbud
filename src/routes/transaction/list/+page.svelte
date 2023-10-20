@@ -1,16 +1,13 @@
 <script lang="ts">
-  import {goto} from "$app/navigation";
   import NavigationButtons from "$lib/components/NavigationButtons.svelte";
   import CreationButtons from "$lib/components/CreationButtons.svelte";
   import MainLayout from "$lib/layouts/MainLayout.svelte";
-  import AcceptCancelButtons from "$lib/components/AcceptCancelButtons.svelte";
-  import {getContext, onMount} from "svelte";
+  import {onMount} from "svelte";
   import {invoke} from "@tauri-apps/api/tauri";
   import {notificationStore, Notify} from "$lib/components/notification/notification.store";
   import TransactionSelector from "$lib/components/TransactionSelector.svelte";
   import dayjs from "dayjs";
   import Datepicker from "$lib/ui/datepicker/Datepicker.svelte";
-  import Dropdown from "$lib/ui/dropdown/Dropdown.svelte";
 
   let tableData = [];
 
@@ -92,21 +89,21 @@
     </div>
   </div>
 
-  <div slot="body" class="px-1">
-    <div>
-      <Dropdown bind:this={dropdown}>
-        <div slot="trigger" class="btn">
-          Hello
-        </div>
-        <div slot="content">
-          <li><a on:click={() => dropdown.close()}>something</a></li>
-          <li><a>something</a></li>
-          <li><a>something</a></li>
-        </div>
-      </Dropdown>
-      <Datepicker selectedDate="2023-12-25" on:selectedDate={(event) => console.log(event)}/>
+
+  <div slot="body">
+    <div class="flex justify-center p-2 gap-2 bg-base-200 rounded-lg">
+      <Datepicker
+          label="Start Date"
+          selectedDate="2023-12-25"
+          on:selectedDate={(event) => console.log(event)}
+      />
+      <Datepicker
+          label="End Date"
+          selectedDate="2023-12-25"
+          on:selectedDate={(event) => console.log(event)}
+      />
     </div>
-    <div class="ov erflow-x-auto">
+    <div class="overflow-x-auto">
       <table class="table">
         <!-- head -->
         {#if tableData.length > 0}

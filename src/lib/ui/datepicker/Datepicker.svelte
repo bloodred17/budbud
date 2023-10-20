@@ -6,15 +6,15 @@
   import Dropdown from "$lib/ui/dropdown/Dropdown.svelte";
 
   const dispatch = createEventDispatcher();
-  export let selectedDate: string;
 
-  let selectedDateStr: string;
-  $: dispatch('selectedDate', selectedDateStr);
+  export let selectedDate: string;
+  export let label: string;
+  export let placeholder: string;
 
   let selectedMonth: number;
   let selectedYear: number;
   $: {
-    if (selectedMonth && selectedYear) {
+    if (selectedMonth > -1 && selectedYear) {
       displayDates = getDatepickerDisplay(selectedMonth, selectedYear);
       console.log(displayDates)
       setYearOptions();
@@ -26,15 +26,13 @@
 
   let displayDates: DisplayDate[] = [];
   onMount(() => {
-    currentDate = (selectedDate) ? dayjs(selectedDate) : dayjs();
-    selectedDateStr = currentDate?.format('YYYY-MM-DD');
-    selectedMonth = currentDate?.month();
-    selectedYear = currentDate?.year();
+    setCurrent(selectedDate);
   });
 
   const dateSelect = (displayDate: DisplayDate) => {
     if (displayDate?.dateForCurrentMonth) {
-      selectedDateStr = displayDate?.dateStr;
+      selectedDate = displayDate?.dateStr;
+      dispatch('selectedDate', selectedDate);
     }
   }
 
@@ -45,6 +43,7 @@
       selectedYear += 1;
     }
   }
+
   const previousMonth = () => {
     selectedMonth -= 1;
     if (selectedMonth < 0) {
@@ -52,6 +51,7 @@
       selectedYear -= 1;
     }
   }
+
   const setYearOptions = () => {
     yearOptions = [];
     for (let i = 0; i < 3; i++) {
@@ -61,14 +61,30 @@
       yearOptions.unshift(selectedYear - i);
     }
   }
+
+  const setCurrent = (selected_date?: string) => {
+    currentDate = (selected_date) ? dayjs(selected_date) : dayjs();
+    selectedDate = currentDate?.format('YYYY-MM-DD');
+    selectedMonth = currentDate?.month();
+    selectedYear = currentDate?.year();
+  }
+
+  let monthSelector;
+  let yearSelector;
 </script>
 
 <Dropdown modify="w-full max-w-xs bg-base-100/90 shadow">
-  <input slot="trigger" tabindex="0" type="text" placeholder="Type here" class="input input-bordered input-xs w-full" />
+  <div slot="trigger" class="form-control w-full max-w-xs">
+    <label class="label" for="transaction_name">
+      <span class="label-text">{label}</span>
+    </label>
+    <input type="text" placeholder={placeholder} class="input input-bordered input-xs w-full" bind:value={selectedDate} />
+  </div>
+
   <div slot="content" class="pt-2 rounded-lg text-center lg:col-start-8 lg:col-end-13 lg:row-start-1 xl:col-start-9">
     <div class="flex justify-between items-center mx-2">
       <button type="button"
-              class="-m-1.5 flex flex-none items-center justify-center p-1.5 text-gray-400 hover:bg-primary rounded-full"
+              class="-m-1.5 flex flex-none items-center justify-center p-1.5 text-gray-400 hover:bg-primary hover:text-primary-content rounded-full"
               on:click={() => previousMonth()}
       >
         <span class="sr-only">Previous month</span>
@@ -78,7 +94,7 @@
         </svg>
       </button>
 
-      <Dropdown modify="bg-base-100 shadow max-w-xs w-fit h-60 overflow-y-auto">
+      <Dropdown bind:this={monthSelector} modify="bg-base-100 shadow max-w-xs w-fit h-60 overflow-y-auto">
         <div slot="trigger" class="font-semibold btn btn-sm">
           <span>{displayMonths.get(selectedMonth)}</span>
         </div>
@@ -86,7 +102,10 @@
         <ul slot="content">
           {#each displayMonths as [value, month]}
             <li>
-              <div on:click={() => selectedMonth = value}
+              <div on:click={() => {
+                  selectedMonth = value;
+                  monthSelector?.close();
+              }}
                    class:bg-primary={selectedMonth == value}
                    class:text-primary-content={selectedMonth == value}>
                 {month}
@@ -96,23 +115,34 @@
         </ul>
       </Dropdown>
 
-      <Dropdown modify="bg-base-100 shadow max-w-xs w-fit overflow-y-auto">
+      <button class="btn btn-sm" on:click={() => setCurrent()}>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+        </svg>
+      </button>
+
+      <Dropdown bind:this={yearSelector} modify="bg-base-100 shadow max-w-xs w-fit overflow-y-auto">
         <div slot="trigger" class="font-semibold btn btn-sm">
-          <span tabindex="1">{selectedYear}</span>
+          <span>{selectedYear}</span>
         </div>
 
         <ul slot="content">
           {#each yearOptions as yearOption}
-            <li><div on:click={() => selectedYear = yearOption}
-                     class:bg-primary={selectedYear == yearOption}
-                     class:text-primary-content={selectedYear == yearOption}
-            >{yearOption}</div></li>
+            <li>
+              <div on:click={() => {
+                  selectedYear = yearOption;
+                  yearSelector?.close();
+              }}
+                 class:bg-primary={selectedYear == yearOption}
+                 class:text-primary-content={selectedYear == yearOption}
+              >{yearOption}</div>
+            </li>
           {/each}
         </ul>
       </Dropdown>
 
       <button type="button"
-              class="-m-1.5 flex flex-none items-center justify-center p-1.5 text-gray-400 hover:bg-primary rounded-full"
+              class="-m-1.5 flex flex-none items-center justify-center p-1.5 text-gray-400 hover:bg-primary hover:text-primary-content rounded-full"
               on:click={() => nextMonth()}
       >
         <span class="sr-only">Next month</span>
@@ -123,7 +153,7 @@
       </button>
     </div>
 
-    <div class="mt-6 grid grid-cols-7 text-xs leading-6 text-gray-500">
+    <div class="mt-6 grid grid-cols-7 text-xs leading-6 text-gray-500 bg-base-100 rounded-xl">
       <div>S</div>
       <div>M</div>
       <div>T</div>
@@ -134,27 +164,6 @@
     </div>
 
     <div class="isolate mt-2 grid grid-cols-7 gap-px rounded-lg bg-gray-200 text-sm shadow ring-1 ring-gray-200">
-      <!--
-        Always include: "py-1.5 hover:bg-gray-100 focus:z-10"
-        Is current month, include: "bg-base"
-        Is not current month, include: "bg-gray-50"
-        Is selected or is today, include: "font-semibold"
-        Is selected, include: "text-white"
-        Is not selected, is not today, and is current month, include: "text-gray-900"
-        Is not selected, is not today, and is not current month, include: "text-gray-400"
-        Is today and is not selected, include: "text-indigo-600"
-
-        Top left day, include: "rounded-tl-lg"
-        Top right day, include: "rounded-tr-lg"
-        Bottom left day, include: "rounded-bl-lg"
-        Bottom right day, include: "rounded-br-lg"
-      -->
-      <!--
-        Always include: "mx-auto flex h-7 w-7 items-center justify-center rounded-full"
-        Is selected and is today, include: "bg-indigo-600"
-        Is selected and is not today, include: "bg-gray-900"
-      -->
-
       {#each displayDates as displayDate, index}
         <button type="button"
                 class="py-1.5 text-gray-400 hover:bg-gray-100 z-10"
@@ -170,8 +179,8 @@
         >
           <time datetime={displayDate?.dateStr}
                 class="mx-auto flex h-7 w-7 items-center justify-center rounded-full"
-                class:bg-primary={selectedDateStr === displayDate?.dateStr}
-                class:text-primary-content={selectedDateStr === displayDate?.dateStr}
+                class:bg-primary={selectedDate === displayDate?.dateStr}
+                class:text-primary-content={selectedDate === displayDate?.dateStr}
           >
             {+displayDate.dayDate}
           </time>

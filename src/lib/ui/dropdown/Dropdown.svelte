@@ -16,7 +16,7 @@
   <div use:clickOutside
        on:click_outside={() => open = false}
        class:hidden={open === false}
-       class="z-[1] menu p-2 rounded-box w-full absolute {modify}">
+       class="z-[1] menu p-2 rounded-box absolute {modify}">
     <slot name="content" />
   </div>
 </div>
