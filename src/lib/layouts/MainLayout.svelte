@@ -1,7 +1,7 @@
 <script>
 </script>
 
-<section class="overflow-x-hidden">
+<section class="overflow-x-hidden min-h-screen p-4">
   <div class="header">
     <slot name="header" />
   </div>
@@ -25,7 +25,7 @@
   }
 
   .footer {
-      position: absolute;
+      position: fixed;
       @apply bottom-0 left-0 p-4;
   }
 </style>

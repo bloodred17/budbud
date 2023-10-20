@@ -4,11 +4,13 @@
   import CreationButtons from "$lib/components/CreationButtons.svelte";
   import MainLayout from "$lib/layouts/MainLayout.svelte";
   import AcceptCancelButtons from "$lib/components/AcceptCancelButtons.svelte";
-  import {onMount} from "svelte";
+  import {getContext, onMount} from "svelte";
   import {invoke} from "@tauri-apps/api/tauri";
   import {notificationStore, Notify} from "$lib/components/notification/notification.store";
   import TransactionSelector from "$lib/components/TransactionSelector.svelte";
   import dayjs from "dayjs";
+  import Datepicker from "$lib/ui/datepicker/Datepicker.svelte";
+  import Dropdown from "$lib/ui/dropdown/Dropdown.svelte";
 
   let tableData = [];
 
@@ -70,6 +72,8 @@
       row?.classList?.add('hidden');
     }
   }
+
+  let dropdown;
 </script>
 
 <MainLayout>
@@ -89,8 +93,20 @@
   </div>
 
   <div slot="body" class="px-1">
-
-    <div class="overflow-x-auto">
+    <div>
+      <Dropdown bind:this={dropdown}>
+        <div slot="trigger" class="btn">
+          Hello
+        </div>
+        <div slot="content">
+          <li><a on:click={() => dropdown.close()}>something</a></li>
+          <li><a>something</a></li>
+          <li><a>something</a></li>
+        </div>
+      </Dropdown>
+      <Datepicker selectedDate="2023-12-25" on:selectedDate={(event) => console.log(event)}/>
+    </div>
+    <div class="ov erflow-x-auto">
       <table class="table">
         <!-- head -->
         {#if tableData.length > 0}

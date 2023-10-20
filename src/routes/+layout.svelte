@@ -21,7 +21,7 @@
   import Notification from "$lib/components/notification/Notification.svelte";
 </script>
 
-<div class="p-4">
+<div class="">
   <slot/>
   <Notification />
 </div>
