@@ -8,6 +8,7 @@
   import TransactionSelector from "$lib/components/TransactionSelector.svelte";
   import dayjs, {type Dayjs} from "dayjs";
   import Datepicker from "$lib/ui/datepicker/Datepicker.svelte";
+  import Modal from "$lib/ui/Modal.svelte";
 
   let tableData = [];
 
@@ -86,7 +87,16 @@
     return endDate.diff(_date, 'hour') > 6;
   }
 
+  let modal;
+  let deleteEntryName = '';
 </script>
+
+<Modal bind:this={modal}>
+  <div slot="body">
+    <h3 class="font-bold text-lg">Are you sure?</h3>
+    <p class="py-4">You want to delete <span class="bg-warning text-warning-content">"{deleteEntryName}"</span> </p>
+  </div>
+</Modal>
 
 <MainLayout>
   <div slot="header" class="flex">
@@ -213,7 +223,13 @@
                   </svg>
                 </button>
                 <!-- Delete-->
-                <button class="btn btn-xs join-item hover:btn-error" on:click={() => delete_transaction(row?.id?.id?.String)}>
+                    <!--delete_transaction(row?.id?.id?.String)-->
+                    <!--delete_modal?.showModal()-->
+                    <!--__modal__?.showModal();-->
+                <button class="btn btn-xs join-item hover:btn-error" on:click|stopPropagation={() => {
+                    deleteEntryName = row?.name;
+                    modal?.openModal(() => delete_transaction(row?.id?.id?.String))
+                }}>
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -221,8 +237,8 @@
               </div>
             </td>
           </tr>
-          <tr id={"expand-" + row?.id?.id?.String} class="hidden">
 
+          <tr id={"expand-" + row?.id?.id?.String} class="hidden">
             <th colspan="6">
               <div class="mockup-code">
                 <pre data-prefix="$"><code>run {row?.transaction_source?.name}</code></pre>
