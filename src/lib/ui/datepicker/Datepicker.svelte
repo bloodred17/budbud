@@ -4,12 +4,15 @@
   import {type DisplayDate, displayMonths, getDatepickerDisplay} from "$lib/ui/datepicker/datepicker";
   import dayjs, {Dayjs} from "dayjs";
   import Dropdown from "$lib/ui/dropdown/Dropdown.svelte";
+  import {notificationStore, NotificationType} from "$lib/components/notification/notification.store";
+  import {v4 as uuidv4} from "uuid";
 
   const dispatch = createEventDispatcher();
 
   export let selectedDate: string;
   export let label: string;
   export let placeholder: string;
+  export let constraints: ({fn: (date: string) => boolean, errorMsg?: string})[] = [];
 
   let selectedMonth: number;
   let selectedYear: number;
@@ -29,8 +32,28 @@
     setCurrent(selectedDate);
   });
 
+  const validateConstraints = (date: string) => {
+    for (const contraint of constraints) {
+      const result = contraint.fn(date);
+      console.log(result);
+      if (!result) {
+        notificationStore.update(() => ({
+          id: uuidv4(),
+          notificationType: NotificationType.Error,
+          message: 'Error: ' + (contraint?.errorMsg || 'Invalid'),
+          timeout: 3000,
+        }));
+        return result;
+      }
+    }
+    return true;
+  }
+
   const dateSelect = (displayDate: DisplayDate) => {
-    if (displayDate?.dateForCurrentMonth) {
+    if (
+      displayDate?.dateForCurrentMonth
+      && validateConstraints(displayDate?.dateStr)
+    ) {
       selectedDate = displayDate?.dateStr;
       dispatch('selectedDate', selectedDate);
     }

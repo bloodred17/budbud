@@ -6,7 +6,7 @@
   import {invoke} from "@tauri-apps/api/tauri";
   import {notificationStore, Notify} from "$lib/components/notification/notification.store";
   import TransactionSelector from "$lib/components/TransactionSelector.svelte";
-  import dayjs from "dayjs";
+  import dayjs, {type Dayjs} from "dayjs";
   import Datepicker from "$lib/ui/datepicker/Datepicker.svelte";
 
   let tableData = [];
@@ -14,12 +14,18 @@
   let total_income: number = 0;
   let total_expense: number = 0;
 
+  let startDate: Dayjs = dayjs();
+  let endDate: Dayjs = dayjs().add(1, 'day');
+
   onMount(() => {
     get_data();
   });
 
   $: console.log(total_income);
   $: console.log(total_expense);
+
+  $: console.log(startDate);
+  $: console.log(endDate);
 
   const get_data = () => {
     invoke<string>('list_transactions')
@@ -70,7 +76,11 @@
     }
   }
 
-  let dropdown;
+  const checkEndDate = (date: string) => {
+    const _date = dayjs(date);
+    return _date.diff(startDate, 'hour') > 20;
+  }
+
 </script>
 
 <MainLayout>
@@ -94,13 +104,19 @@
     <div class="flex justify-center p-2 gap-2 bg-base-200 rounded-lg">
       <Datepicker
           label="Start Date"
-          selectedDate="2023-12-25"
-          on:selectedDate={(event) => console.log(event)}
+          selectedDate={startDate.format('YYYY-MM-DD')}
+          on:selectedDate={(event) => startDate = dayjs(event?.detail)}
       />
       <Datepicker
           label="End Date"
-          selectedDate="2023-12-25"
-          on:selectedDate={(event) => console.log(event)}
+          selectedDate={endDate.format('YYYY-MM-DD')}
+          constraints={[
+              {
+                  fn: checkEndDate,
+                  errorMsg: "End date should be greater than Start date"
+              }
+          ]}
+          on:selectedDate={(event) => endDate = dayjs(event?.detail)}
       />
     </div>
     <div class="overflow-x-auto">
@@ -121,7 +137,7 @@
 
         <tbody>
         {#each tableData as row, index (row?.id?.id?.String)}
-          <tr id={row?.id?.id?.String} class="hover:bg-primary" on:click={() => toggleExpander("expand-" + row?.id?.id?.String)}>
+          <tr id={row?.id?.id?.String} class="hover:bg-primary hover:text-primary-content" on:click={() => toggleExpander("expand-" + row?.id?.id?.String)}>
             <th>{index + 1}</th>
             <td on:click={() => console.log(row)}>{row?.name}</td>
             <td>{row?.amount}</td>
