@@ -4,7 +4,7 @@
   import {type DisplayDate, displayMonths, getDatepickerDisplay} from "$lib/ui/datepicker/datepicker";
   import dayjs, {Dayjs} from "dayjs";
   import Dropdown from "$lib/ui/dropdown/Dropdown.svelte";
-  import {notificationStore, NotificationType} from "$lib/components/notification/notification.store";
+  import {notificationStore, NotificationType, Notify} from "$lib/components/notification/notification.store";
   import {v4 as uuidv4} from "uuid";
 
   const dispatch = createEventDispatcher();
@@ -37,12 +37,10 @@
       const result = contraint.fn(date);
       console.log(result);
       if (!result) {
-        notificationStore.update(() => ({
-          id: uuidv4(),
+        notificationStore.update(() => new Notify({
           notificationType: NotificationType.Error,
           message: 'Error: ' + (contraint?.errorMsg || 'Invalid'),
-          timeout: 3000,
-        }));
+        }))
         return result;
       }
     }

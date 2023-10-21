@@ -78,7 +78,12 @@
 
   const checkEndDate = (date: string) => {
     const _date = dayjs(date);
-    return _date.diff(startDate, 'hour') > 20;
+    return _date.diff(startDate, 'hour') > 6;
+  }
+
+  const checkStartDate = (date: string) => {
+    const _date = dayjs(date);
+    return endDate.diff(_date, 'hour') > 6;
   }
 
 </script>
@@ -105,6 +110,12 @@
       <Datepicker
           label="Start Date"
           selectedDate={startDate.format('YYYY-MM-DD')}
+          constraints={[
+              {
+                  fn: checkStartDate,
+                  errorMsg: "Start date can not be after End date"
+              }
+          ]}
           on:selectedDate={(event) => startDate = dayjs(event?.detail)}
       />
       <Datepicker
@@ -113,7 +124,7 @@
           constraints={[
               {
                   fn: checkEndDate,
-                  errorMsg: "End date should be greater than Start date"
+                  errorMsg: "End date can not be before Start date"
               }
           ]}
           on:selectedDate={(event) => endDate = dayjs(event?.detail)}
