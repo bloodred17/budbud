@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use surrealdb::engine::local::{Db, RocksDb};
 use surrealdb::Surreal;
 use tokio::sync::Mutex;
+use crate::core::transaction::Transaction;
 use crate::core::transaction_source::{TransactionSource, TransactionType};
 
 
@@ -66,7 +67,7 @@ pub async fn establish_connection(state: tauri::State<'_, Database>) -> Result<S
         Some(x) => println!("some"),
     };
 
-    dbg!(&database.db);
+    // dbg!(&database.db);
 
     return Ok(String::from("Connection Established"));
 }
@@ -142,15 +143,25 @@ pub async fn update(state: tauri::State<'_, Database>) -> Result<String, String>
     dbg!(&db);
 
     // Perform a custom advanced query
+    // let sql = r#"
+    //     SELECT *
+    //     FROM type::table($table)
+    //     WHERE start_date > type::datetime("2023-10-15T00:00:00");
+    // "#;
+
     let sql = r#"
         SELECT *
-        FROM type::table($table)
+        FROM transaction
+        WHERE type::datetime(start_date) > type::datetime("2023-10-10");
     "#;
 
-    let groups = db.query(sql)
-        .bind(("table", "transaction_source"))
+    let mut groups = db.query(sql)
+        // .bind(("table", "transaction"))
         .await.expect("query should work");
     dbg!(&groups);
+
+    let transactions: Vec<Transaction> = groups.take(0).expect("something");
+    dbg!(&transactions);
 
     return Ok(String::from("Updating"));
 }

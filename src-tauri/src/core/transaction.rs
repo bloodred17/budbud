@@ -107,15 +107,34 @@ pub async fn create_transaction(
 
 
 #[tauri::command]
-pub async fn list_transactions(state: tauri::State<'_, Database>) -> Result<String, String> {
+pub async fn list_transactions(date_string: String, state: tauri::State<'_, Database>) -> Result<String, String> {
+    dbg!(&date_string);
     let db = get_db_from_state(&state).await.unwrap();
-    let transactions: Vec<Transaction> = db.select("transaction")
-        .await
-        .expect("Transactions");
+    // let transactions: Vec<Transaction> = db.select("transaction")
+    //     .await
+    //     .expect("Transactions");
+    // // dbg!(&transactions);
+    // let json_response = JsonResponse::new(Some(transactions))
+    //     .to_string(None);
+    // // dbg!(&json_response);
+
+    let sql = format!(r#"
+        SELECT *
+        FROM transaction
+        WHERE type::datetime(start_date) > type::datetime("{}");
+    "#, date_string);
+    dbg!(&sql);
+
+    let mut response = db.query(sql)
+        // .bind(("table", "transaction"))
+        .await.expect("query should work");
+    dbg!(&response);
+
+    let transactions: Vec<Transaction> = response.take(0).expect("Transactions should be present");
     dbg!(&transactions);
+
     let json_response = JsonResponse::new(Some(transactions))
         .to_string(None);
-    // dbg!(&json_response);
     Ok(json_response)
 }
 

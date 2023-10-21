@@ -68,7 +68,7 @@ pub async fn list_transaction_sources(state: tauri::State<'_, Database>) -> Resu
     let transaction_sources: Vec<TransactionSource> = db.select("transaction_source")
         .await
         .expect("Transaction sources");
-    dbg!(&transaction_sources);
+    // dbg!(&transaction_sources);
     let json_response = JsonResponse::new(Some(transaction_sources))
         .to_string(None);
     // dbg!(&json_response);
