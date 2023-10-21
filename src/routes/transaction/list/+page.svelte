@@ -1,19 +1,22 @@
 <script lang="ts">
-  import {goto} from "$app/navigation";
   import NavigationButtons from "$lib/components/NavigationButtons.svelte";
   import CreationButtons from "$lib/components/CreationButtons.svelte";
   import MainLayout from "$lib/layouts/MainLayout.svelte";
-  import AcceptCancelButtons from "$lib/components/AcceptCancelButtons.svelte";
   import {onMount} from "svelte";
   import {invoke} from "@tauri-apps/api/tauri";
   import {notificationStore, Notify} from "$lib/components/notification/notification.store";
   import TransactionSelector from "$lib/components/TransactionSelector.svelte";
-  import dayjs from "dayjs";
+  import dayjs, {type Dayjs} from "dayjs";
+  import Datepicker from "$lib/ui/datepicker/Datepicker.svelte";
+  import Modal from "$lib/ui/Modal.svelte";
 
   let tableData = [];
 
   let total_income: number = 0;
   let total_expense: number = 0;
+
+  let startDate: Dayjs = dayjs();
+  let endDate: Dayjs = dayjs().add(1, 'day');
 
   onMount(() => {
     get_data();
@@ -22,8 +25,11 @@
   $: console.log(total_income);
   $: console.log(total_expense);
 
+  $: console.log(startDate);
+  $: console.log(endDate);
+
   const get_data = () => {
-    invoke<string>('list_transactions')
+    invoke<string>('list_transactions', {dateString: startDate.format('YYYY-MM-DD')})
       .then((response: string) => {
         tableData = JSON.parse(response).data;
         total_income = get_total_income();
@@ -70,7 +76,27 @@
       row?.classList?.add('hidden');
     }
   }
+
+  const checkEndDate = (date: string) => {
+    const _date = dayjs(date);
+    return _date.diff(startDate, 'hour') > 6;
+  }
+
+  const checkStartDate = (date: string) => {
+    const _date = dayjs(date);
+    return endDate.diff(_date, 'hour') > 6;
+  }
+
+  let modal;
+  let deleteEntryName = '';
 </script>
+
+<Modal bind:this={modal}>
+  <div slot="body">
+    <h3 class="font-bold text-lg">Are you sure?</h3>
+    <p class="py-4">You want to delete <span class="bg-warning text-warning-content">"{deleteEntryName}"</span> </p>
+  </div>
+</Modal>
 
 <MainLayout>
   <div slot="header" class="flex">
@@ -88,7 +114,69 @@
     </div>
   </div>
 
-  <div slot="body" class="px-1">
+
+  <div slot="body">
+    <div class="flex justify-center p-2 gap-2 bg-base-200 rounded-lg">
+      <Datepicker
+          label="Start Date"
+          selectedDate={startDate.format('YYYY-MM-DD')}
+          constraints={[
+              {
+                  fn: checkStartDate,
+                  errorMsg: "Start date can not be after End date"
+              }
+          ]}
+          on:selectedDate={(event) => startDate = dayjs(event?.detail)}
+      />
+      <Datepicker
+          label="End Date"
+          selectedDate={endDate.format('YYYY-MM-DD')}
+          constraints={[
+              {
+                  fn: checkEndDate,
+                  errorMsg: "End date can not be before Start date"
+              }
+          ]}
+          on:selectedDate={(event) => endDate = dayjs(event?.detail)}
+      />
+      <div class="flex-1"></div>
+      <div class="flex px-4 py-2 gap-4 rounded-xl bg-base-100">
+        <div class="">
+          <div class="flex gap-1">
+            <div class="text-sm">
+              Income
+            </div>
+            <div class="text-secondary">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
+              </svg>
+            </div>
+          </div>
+          <div class="text-xl">{total_income}</div>
+        </div>
+
+        <div class="">
+          <div class="flex gap-1">
+            <div class="text-sm">Expense</div>
+            <div class="text-secondary">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6L9 12.75l4.286-4.286a11.948 11.948 0 014.306 6.43l.776 2.898m0 0l3.182-5.511m-3.182 5.51l-5.511-3.181" />
+              </svg>
+            </div>
+          </div>
+          <div class="text-xl">{total_expense}</div>
+        </div>
+
+      </div>
+
+      <div class="flex-1"></div>
+      <button class="btn btn-lg btn-primary" on:click={() => get_data()}>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
+        </svg>
+
+      </button>
+    </div>
 
     <div class="overflow-x-auto">
       <table class="table">
@@ -108,7 +196,9 @@
 
         <tbody>
         {#each tableData as row, index (row?.id?.id?.String)}
-          <tr id={row?.id?.id?.String} class="hover:bg-primary" on:click={() => toggleExpander("expand-" + row?.id?.id?.String)}>
+          <tr id={row?.id?.id?.String}
+              class="hover:bg-primary hover:text-primary-content cursor-pointer"
+              on:click={() => toggleExpander("expand-" + row?.id?.id?.String)}>
             <th>{index + 1}</th>
             <td on:click={() => console.log(row)}>{row?.name}</td>
             <td>{row?.amount}</td>
@@ -133,7 +223,13 @@
                   </svg>
                 </button>
                 <!-- Delete-->
-                <button class="btn btn-xs join-item hover:btn-error" on:click={() => delete_transaction(row?.id?.id?.String)}>
+                    <!--delete_transaction(row?.id?.id?.String)-->
+                    <!--delete_modal?.showModal()-->
+                    <!--__modal__?.showModal();-->
+                <button class="btn btn-xs join-item hover:btn-error" on:click|stopPropagation={() => {
+                    deleteEntryName = row?.name;
+                    modal?.openModal(() => delete_transaction(row?.id?.id?.String))
+                }}>
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -141,8 +237,8 @@
               </div>
             </td>
           </tr>
-          <tr id={"expand-" + row?.id?.id?.String} class="hidden">
 
+          <tr id={"expand-" + row?.id?.id?.String} class="hidden">
             <th colspan="6">
               <div class="mockup-code">
                 <pre data-prefix="$"><code>run {row?.transaction_source?.name}</code></pre>
@@ -174,31 +270,6 @@
 
       {#if tableData.length > 0}
         <div class="flex justify-center mt-4">
-          <div class="stats shadow bg-base-300">
-
-            <div class="stat">
-              <div class="stat-figure text-secondary">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
-                </svg>
-              </div>
-              <div class="stat-title">Income</div>
-              <div class="stat-value">{total_income}</div>
-              <div class="stat-desc">Jan 1st - Feb 1st</div>
-            </div>
-
-            <div class="stat">
-              <div class="stat-figure text-secondary">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6L9 12.75l4.286-4.286a11.948 11.948 0 014.306 6.43l.776 2.898m0 0l3.182-5.511m-3.182 5.51l-5.511-3.181" />
-                </svg>
-              </div>
-              <div class="stat-title">Expense</div>
-              <div class="stat-value">{total_expense}</div>
-              <div class="stat-desc">Jan 1st - Feb 1st</div>
-            </div>
-
-          </div>
         </div>
       {/if}
     </div>
